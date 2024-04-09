@@ -117,9 +117,35 @@ component sevenSegDecoder is
     );
 end component sevenSegDecoder;
 
+    -- Declare TDM component
+component TDM4 is
+    generic ( constant k_WIDTH : natural  := 4); -- bits in input and output
+    port ( i_clk        : in  STD_LOGIC;
+           i_reset      : in  STD_LOGIC; -- asynchronous
+           i_D3         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+           i_D2         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+           i_D1         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+           i_D0         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+           o_data       : out STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+           o_sel        : out STD_LOGIC_VECTOR (3 downto 0)    -- selected data line (one-cold)
+     
+     );
+end component TDM4;
+
+    -- Declare binaryToHex component
+component binaryToHex is
+    port ( i_binary : in STD_LOGIC_VECTOR (3 downto 0);
+           o_ones : out STD_LOGIC_VECTOR (3 downto 0);
+           o_tens : out STD_LOGIC_VECTOR (3 downto 0)
+    );
+end component binaryToHex;
+
 -- Declare Signals
 signal w_clk : std_logic;   -- signal from clock to led and elevator controller
-signal w_floor : std_logic_vector (3 downto 0); -- signal from elevator controller to sevenSegmentDecoder
+signal w_floor : std_logic_vector (3 downto 0); -- signal from elevator controller to binaryToHex
+signal w_ones : std_logic_vector (3 downto 0);  -- signal from ones of binaryToHex to TDM4
+signal w_tens : std_logic_vector (3 downto 0);  -- signal from tens of binaryToHex to TDM4
+signal w_data : std_logic_vector (3 downto 0);  -- signal from TDM to sevenSegDecoder
 
 begin
 	-- PORT MAPS ----------------------------------------
@@ -145,11 +171,32 @@ begin
 	    -- port map for sevenSegDecoder
 	sevenSegDecoder_arch: sevenSegDecoder
 	port map(
-	   i_D => w_floor,
+	   i_D => w_data,
 	   o_S => seg
 	);
+	   
+	    -- port map for TDM
+	behavioral: TDM4
+    generic map (k_WIDTH => 4)
+    port map ( 
+        i_clk => clk,
+        i_reset => '0',
+        i_D3 => w_tens,
+        i_D2 => w_ones,
+        i_D1 => (others => '0'),
+        i_D0 => (others => '0'),
+        o_data => w_data,
+        o_sel => an
+     );
 	
-	
+	    -- port map for binarytoHex
+	binaryToHex_arch: binaryToHex
+	port map(
+	   i_binary => w_floor,
+	   o_ones => w_ones,
+       o_tens => w_tens
+    );
+    
 	-- CONCURRENT STATEMENTS ----------------------------
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
@@ -158,11 +205,8 @@ begin
 
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
 	
-	-- wire up active-low 7SD anodes (an) as required
-	an(0) <= '0';
 	-- Tie any unused anodes to power ('1') to keep them off
+	an(0) <= '1';
 	an(1) <= '1';
-	an(2) <= '1';
-	an(3) <= '1';
 	
 end top_basys3_arch;
