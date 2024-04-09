@@ -153,6 +153,7 @@ begin
 	-- CONCURRENT STATEMENTS ----------------------------
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
+	led(15) <= w_clk;
 	led(14 downto 0) <= (others => '0');
 
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
