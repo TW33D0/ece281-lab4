@@ -156,6 +156,8 @@ signal w_floor : std_logic_vector (3 downto 0); -- signal from elevator controll
 signal w_ones : std_logic_vector (3 downto 0);  -- signal from ones of binaryToHex to TDM4
 signal w_tens : std_logic_vector (3 downto 0);  -- signal from tens of binaryToHex to TDM4
 signal w_data : std_logic_vector (3 downto 0);  -- signal from TDM to sevenSegDecoder
+signal w_elevator_reset : std_logic; --reset for elevator
+signal w_clock_reset : std_logic; --reset for clocks
 
 begin
 	-- PORT MAPS ----------------------------------------
@@ -163,7 +165,7 @@ begin
     elevator_controller_fsm_arch: elevator_controller_fsm
     port map(
         i_clk => w_clk,
-        i_reset => (btnR or btnU),
+        i_reset => w_elevator_reset,
         i_up_down => sw(1),
         i_stop => sw(0),
         o_floor => w_floor
@@ -174,7 +176,7 @@ begin
     generic map(k_DIV => 25000000) -- k_DIV = 50 MHz / clock
 	port map(                      -- 2 Hz clock from 100 MHz
 	    i_clk => clk,
-        i_reset => (btnL or btnU),
+        i_reset => w_clock_reset,
 	    o_clk => w_clk
     );
 	    
@@ -212,7 +214,7 @@ begin
     generic map(k_DIV => 200000)   -- k_DIV = 50 MHz / clock
     port map(                        -- 250 Hz clock from 100 MHz
         i_clk => clk,
-        i_reset => (btnL or btnU),
+        i_reset => w_clock_reset,
         o_clk => w_clk2
     );
     
@@ -221,7 +223,10 @@ begin
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
 	led(15) <= w_clk;
 	led(14 downto 0) <= (others => '0');
-
+    -- assign the resets to the correct buttons
+    w_clock_reset <= btnL or btnU;
+    w_elevator_reset <= btnR or btnU;
+    
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
 	
 	-- Tie any unused anodes to power ('1') to keep them off
