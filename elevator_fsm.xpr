@@ -73,7 +73,15 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/src/hdl/clock_divider.vhd">
+      <File Path="$PSRCDIR/sources_1/imports/hdl/clock_divider.vhd">
+        <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/src/hdl/clock_divider.vhd"/>
+          <Attr Name="ImportTime" Val="1712190644"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/clock_divider2.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

@@ -140,8 +140,18 @@ component binaryToHex is
     );
 end component binaryToHex;
 
+    -- Declare second clock_divider component
+component clock_divider2 is
+    generic ( constant k_DIV : natural := 2	);
+	port ( 	i_clk    : in std_logic;           -- Basys3 clock
+			i_reset  : in std_logic;		   -- asynchronous
+			o_clk    : out std_logic		   -- divided (slow) clock
+	);
+end component clock_divider2;
+
 -- Declare Signals
 signal w_clk : std_logic;   -- signal from clock to led and elevator controller
+signal w_clk2 : std_logic;  -- signal from clock to TDM
 signal w_floor : std_logic_vector (3 downto 0); -- signal from elevator controller to binaryToHex
 signal w_ones : std_logic_vector (3 downto 0);  -- signal from ones of binaryToHex to TDM4
 signal w_tens : std_logic_vector (3 downto 0);  -- signal from tens of binaryToHex to TDM4
@@ -179,7 +189,7 @@ begin
 	behavioral: TDM4
     generic map (k_WIDTH => 4)
     port map ( 
-        i_clk => clk,
+        i_clk => w_clk2,
         i_reset => '0',
         i_D3 => w_tens,
         i_D2 => w_ones,
@@ -195,6 +205,15 @@ begin
 	   i_binary => w_floor,
 	   o_ones => w_ones,
        o_tens => w_tens
+    );
+    
+        -- port map for clock divider2
+    clkdiv_inst2 : clock_divider2    -- clock = 100 MHz / (2*k_DIV)
+    generic map(k_DIV => 800000)   -- k_DIV = 50 MHz / clock
+    port map(                        -- 62.5 Hz clock from 100 MHz
+        i_clk => clk,
+        i_reset => (btnL or btnU),
+        o_clk => w_clk2
     );
     
 	-- CONCURRENT STATEMENTS ----------------------------
