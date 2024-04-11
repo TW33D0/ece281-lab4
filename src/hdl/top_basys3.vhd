@@ -209,8 +209,8 @@ begin
     
         -- port map for clock divider2
     clkdiv_inst2 : clock_divider2    -- clock = 100 MHz / (2*k_DIV)
-    generic map(k_DIV => 800000)   -- k_DIV = 50 MHz / clock
-    port map(                        -- 62.5 Hz clock from 100 MHz
+    generic map(k_DIV => 200000)   -- k_DIV = 50 MHz / clock
+    port map(                        -- 250 Hz clock from 100 MHz
         i_clk => clk,
         i_reset => (btnL or btnU),
         o_clk => w_clk2
